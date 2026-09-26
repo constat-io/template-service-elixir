@@ -9,4 +9,4 @@ this repository as being from no template — which will then be the truth about
 - template: service-elixir
 - name: Service · Elixir
 - detail: tests and a report; no screen to picture
-- version: 41
+- version: 42
