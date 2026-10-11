@@ -1,4 +1,4 @@
-# constat:template id=exunit-formatter version=54 sha256=c24d2cd9b098d3c3366736b5e5e5279f6f8b4d7cce15a530a22fca811c5fb524
+# constat:template id=exunit-formatter version=55 sha256=c24d2cd9b098d3c3366736b5e5e5279f6f8b4d7cce15a530a22fca811c5fb524
 defmodule Constat.CheckReportFormatter do
   @moduledoc """
   Writes ExUnit's own results as the machine-readable per-test report DoneMark's CI collector
