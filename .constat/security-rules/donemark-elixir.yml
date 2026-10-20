@@ -1,0 +1,85 @@
+# constat:template id=donemark-security-rules-elixir version=72 sha256=82d91b487ead925a93f282777a5bbf5fded128bc61183351b1f444158b2d240d
+# DoneMark's own code rules for Elixir (the security square, move 6, 20 October 2026). Written by
+# DoneMark, kept in your repository, open. A rule with a security-severity of 7 or more turns the security
+# square red; the others are listed, not counted. The square is never a gate: the judge decides.
+#
+# Each rule has a test beside it (donemark-elixir.ex): run `opengrep scan --test` on this folder.
+rules:
+  - id: donemark.elixir.query-from-input
+    message: A database query is built from text that came from outside, so that text can change the query
+    severity: ERROR
+    languages: [elixir]
+    metadata:
+      security-severity: "8.0"
+      category: security
+      cwe: "CWE-89"
+    pattern-either:
+      - pattern: $REPO.query("..." <> $X, ...)
+      - pattern: $REPO.query!("..." <> $X, ...)
+      - pattern: $REPO.query("...#{$X}...", ...)
+      - pattern: $REPO.query!("...#{$X}...", ...)
+      - pattern: Ecto.Adapters.SQL.query($R, "..." <> $X, ...)
+      - pattern: Ecto.Adapters.SQL.query($R, "...#{$X}...", ...)
+
+  - id: donemark.elixir.code-eval
+    message: Code is run from a string, so any text that reaches it is run as code
+    severity: ERROR
+    languages: [elixir]
+    metadata:
+      security-severity: "8.5"
+      category: security
+      cwe: "CWE-95"
+    pattern-either:
+      - pattern: Code.eval_string($X, ...)
+      - pattern: Code.eval_quoted($X, ...)
+
+  - id: donemark.elixir.shell-from-input
+    message: A shell command is built from text that came from outside, so that text can run commands
+    severity: ERROR
+    languages: [elixir]
+    metadata:
+      security-severity: "8.5"
+      category: security
+      cwe: "CWE-78"
+    pattern-either:
+      - pattern: System.shell("...#{$X}...", ...)
+      - pattern: System.shell("..." <> $X, ...)
+      - pattern: :os.cmd(...)
+
+  - id: donemark.elixir.binary-to-term
+    message: Data from outside is turned back into terms without the safe option, which can create atoms and functions
+    severity: ERROR
+    languages: [elixir]
+    metadata:
+      security-severity: "7.5"
+      category: security
+      cwe: "CWE-502"
+    patterns:
+      - pattern: :erlang.binary_to_term($X)
+
+  - id: donemark.elixir.atom-from-input
+    message: An atom is made from text that came from outside; atoms are never freed, so this can exhaust the node
+    severity: WARNING
+    languages: [elixir]
+    metadata:
+      security-severity: "5.5"
+      category: security
+      cwe: "CWE-400"
+    patterns:
+      - pattern: String.to_atom($X)
+      - pattern-not: String.to_atom("...")
+
+  - id: donemark.elixir.raw-html
+    message: HTML is rendered without escaping; text that came from outside can carry script
+    severity: WARNING
+    languages: [elixir]
+    metadata:
+      security-severity: "6.0"
+      category: security
+      cwe: "CWE-79"
+    patterns:
+      - pattern-either:
+          - pattern: raw($X)
+          - pattern: Phoenix.HTML.raw($X)
+      - pattern-not: raw("...")
+      - pattern-not: Phoenix.HTML.raw("...")
